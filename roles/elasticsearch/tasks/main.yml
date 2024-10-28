@@ -1,7 +1,13 @@
 ---
+- name: Check if state is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Unsupported state '{{ elasticsearch_state }}'. Supported
+      states are {{ elasticsearch_states | join(', ') }}.
+  when: elasticsearch_state not in elasticsearch_states
 
-- name: Ensure host directories are present
-  file:
+- name: Ensure host directories are {{ elasticsearch_state }}
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: "0777"
@@ -9,15 +15,16 @@
     - "{{ elasticsearch_base_path }}"
     - "{{ elasticsearch_data_path }}"
 
-- name: Ensure elastic container image is present
-  docker_image:
+- name: Ensure elasticsearch container image '{{ elasticsearch_container_image }}' is {{ elasticsearch_state }}
+  community.docker.docker_image:
     name: "{{ elasticsearch_container_image }}"
-    state: present
-    source: pull
+    state: "{{ elasticsearch_state }}"
+    source: "{{ elasticsearch_container_image_source }}"
+    force_source: "{{ elasticsearch_container_image_force_source }}"
     force_source: "{{ elasticsearch_container_image_tag|default(false, true)|bool }}"
 
-- name: Ensure elastic container is running
-  docker_container:
+- name: Ensure elasticsearch container '{{ elasticsearch_container_name }}' is {{ elasticsearch_container_state }}
+  community.docker.docker_container:
     name: "{{ elasticsearch_container_name }}"
     image: "{{ elasticsearch_container_image }}"
     env: "{{ elasticsearch_container_env | default(omit, True) }}"
@@ -29,4 +36,4 @@
     networks: "{{ elasticsearch_container_networks | default(omit, True) }}"
     purge_networks: "{{ elasticsearch_container_purge_networks | default(omit, True) }}"
     restart_policy: "{{ elasticsearch_container_restart_policy }}"
-    state: started
+    state: "{{ elasticsearch_container_state }}"

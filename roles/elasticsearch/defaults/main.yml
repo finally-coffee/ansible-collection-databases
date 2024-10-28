@@ -1,6 +1,6 @@
 ---
-
 elasticsearch_version: 7.17.7
+elasticsearch_state: present
 
 elasticsearch_base_path: /opt/elasticsearch
 elasticsearch_data_path: "{{ elasticsearch_base_path }}/data"
@@ -10,10 +10,23 @@ elasticsearch_config_discovery_type: single-node
 elasticsearch_config_boostrap_memory_lock: true
 elasticsearch_allocated_ram_mb: 512
 
-elasticsearch_container_image_name: docker.elastic.co/elasticsearch/elasticsearch-oss
+elasticsearch_container_image_registry: docker.elastic.co
+elasticsearch_container_image_namespace: elasticsearch
+elasticsearch_container_image_name: elasticsearch-oss
 elasticsearch_container_image_tag: ~
-elasticsearch_container_image: >-
-  {{ elasticsearch_container_image_name }}:{{ elasticsearch_container_image_tag | default(elasticsearch_version, true) }}
+elasticsearch_container_image: >-2
+  {{
+    ([
+      elasticsearch_container_image_registry | default([], true),
+      elasticsearch_container_image_namespace | default([], true),
+      elasticsearch_container_image_name,
+    ] | flatten | join('/'))
+    + ':' +
+    (elasticsearch_container_image_tag | default(elasticsearch_version, true))
+  }}
+elasticsearch_container_image_source: pull
+elasticsearch_container_image_force_source: >-2
+  {{ elasticsearch_container_image_tag | default(false, true) | bool }}
 
 elasticsearch_container_name: elasticsearch
 elasticsearch_container_env:
@@ -33,3 +46,5 @@ elasticsearch_container_volumes:
 elasticsearch_container_networks: ~
 elasticsearch_container_purge_networks: ~
 elasticsearch_container_restart_policy: unless-stopped
+elasticsearch_container_state: >-2
+  {{ (elasticsearch_state == 'present') | ternary('started', 'absent') }}
