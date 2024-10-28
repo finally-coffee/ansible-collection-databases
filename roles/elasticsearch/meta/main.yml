@@ -1,0 +1,10 @@
+---
+allow_duplicates: true
+dependencies: []
+galaxy_info:
+  role_name: elasticsearch
+  description: >-2
+    Deploy elasticsearch in a docker container
+  galaxy_tags:
+    - elasticsearch
+    - docker
