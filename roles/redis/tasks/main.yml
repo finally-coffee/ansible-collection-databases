@@ -1,0 +1,68 @@
+---
+- name: Ensure state is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Unsupported state '{{ redis_state }}'.
+      Supported states are {{ redis_states | join(', ') }}
+  when: redis_state not in redis_states
+
+- name: Ensure deployment method is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Unsupported deployment method '{{ redis_deployment_method }}'!
+      Supported methods are {{ redis_deployment_method | join(', ') }}
+  when: redis_deployment_method not in redis_deployment_methods
+
+- name: Ensure redis user '{{ redis_user }}' is {{ redis_state }}
+  ansible.builtin.user:
+    name: "{{ redis_user }}"
+    state: "{{ redis_state }}"
+    system: "{{ redis_user_system }}"
+    create_home: "{{ redis_user_create_home }}"
+    groups: "{{ redis_user_groups | default(omit, true) }}"
+    append: "{{ redis_user_append_groups | default(omit, true) }}"
+  register: redis_user_info
+
+- name: Ensure redis config file '{{ redis_config_file }}' is {{ redis_state }}
+  ansible.builtin.file:
+    path: "{{ redis_config_file }}"
+    state: "{{ redis_state }}"
+  when: redis_state == 'absent'
+
+- name: Ensure redis host directories are {{ redis_state }}
+  ansible.builtin.file:
+    path: "{{ path.name }}"
+    state: >-2
+      {{ (redis_state == 'present') | ternary('directory', 'absent') }}
+    owner: "{{ path.owner | default(redis_run_user_id) }}"
+    group: "{{ path.group | default(redis_run_group_id) }}"
+    mode: "{{ path.mode | default('0755') }}"
+  loop:
+    - name: "{{ redis_config_path }}"
+    - name: "{{ redis_data_path }}"
+  loop_control:
+    loop_var: "path"
+    label: "{{ path.name }}"
+
+- name: Ensure redis config file '{{ redis_config_file }}' is {{ redis_state }}
+  ansible.builtin.copy:
+    content: |+2
+      {% for tuple in (redis_merged_config | dict2items) %}
+      {% if tuple.value is string  or tuple.value is number %}
+      {{ tuple.key }} {{ tuple.value }}
+      {% else %}
+      {% for value in tuple.value %}
+      {{ tuple.key }} {{ value }}
+      {% endfor %}
+      {% endif %}
+      {% endfor %}
+    dest: "{{ redis_config_file }}"
+    owner: "{{ redis_run_user_id }}"
+    group: "{{ redis_run_group_id }}"
+    mode: "0640"
+  when: redis_state == 'present'
+  notify: redis-restart
+
+- name: Deploy redis using {{ redis_deployment_method }}
+  ansible.builtin.include_tasks:
+    file: "deploy-{{ redis_deployment_method }}.yml"

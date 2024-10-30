@@ -1,0 +1,41 @@
+---
+redis_config_bind:
+  - "127.0.0.1"
+  - "-::1"
+redis_config_protected_mode: true
+redis_config_port: 6379
+redis_config_unixsocket: ~
+redis_config_unixsocketperm: '700'
+redis_config_user:
+  - "default on +@all -DEBUG ~* nopass"
+redis_config_databases: 16
+redis_config_supervised: false
+redis_config_daemonize: false
+redis_config_dbfilename: dump.rdb
+redis_config_dir: "{{ redis_data_path }}"
+redis_config_save: "3600 1 300 100 60 10000"
+redis_config_appendfsync: everysec
+
+redis_base_config:
+  bind: "{{ redis_config_bind | join(' ') }}"
+  "protected-mode": "{{ redis_config_protected_mode | bool | ternary('yes', 'no') }}"
+  port: "{{ redis_config_port }}"
+  user: "{{ redis_config_user }}"
+  databases: "{{ redis_config_databases }}"
+  daemonize: "{{ redis_config_daemonize | bool | ternary('yes', 'no') }}"
+  supervised: "{{ redis_config_supervised | bool | ternary('yes', 'no') }}"
+  save: "{{ redis_config_save }}"
+  dbfilename: "{{ redis_config_dbfilename }}"
+  dir: "{{ redis_config_dir }}"
+  appendfsync: "{{ redis_config_appendfsync }}"
+
+redis_config: ~
+redis_merged_config: >-2
+  {{ redis_base_config
+  | combine(({
+      'unixsocket': redis_config_unixsocket,
+      'unixsocketperm': redis_config_unixsocketperm,
+    })
+    if (redis_config_unixsocket | default(false, true)) else {},
+    recursive=True)
+  | combine(redis_config | default({}, true), recursive=True) }}

@@ -1,0 +1,11 @@
+---
+- name: Ensure redis container '{{ redis_container_name }}' is restarted
+  community.docker.docker_container:
+    name: "{{ redis_container_name }}"
+    state: "{{ redis_container_state }}"
+    restart: true
+  listen: redis-restart
+  when:
+    - redis_deployment_method == 'docker'
+    - redis_state == 'present'
+  ignore_errors: "{{ ansible_check_mode }}"

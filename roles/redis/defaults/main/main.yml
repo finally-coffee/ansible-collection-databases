@@ -1,0 +1,15 @@
+---
+redis_version: "7.2.4"
+redis_state: "present"
+redis_instance: ~
+redis_instance_suffix: >-2
+  {{ ((redis_instance is string) and (redis_instance | length > 0))
+    | ternary('-' + (redis_instance | default('', true)), '') }}
+redis_user: >-2
+  redis{{ redis_instance_suffix }}
+
+redis_config_path: "/etc/redis"
+redis_config_file: >-2
+  {{ redis_config_path }}/redis{{ redis_instance_suffix }}.conf
+redis_data_path: "/var/lib/redis{{ redis_instance_suffix }}"
+redis_deployment_method: docker

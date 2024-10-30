@@ -1,0 +1,26 @@
+---
+- name: Ensure container image '{{ redis_container_image }}' is {{ redis_state }}
+  community.docker.docker_image:
+    name: "{{ redis_container_image }}"
+    state: "{{ redis_state }}"
+    source: "{{ redis_container_image_source }}"
+    force_source: "{{ redis_container_image_force_source }}"
+  register: redis_container_image_info
+  until: redis_container_image_info is success
+  retries: 5
+  delay: 3
+
+- name: Ensure container '{{ redis_container_name }}' is {{ redis_container_state }}
+  community.docker.docker_container:
+    name: "{{ redis_container_name }}"
+    image: "{{ redis_container_image }}"
+    env: "{{ redis_container_env | default(omit, true) }}"
+    user: "{{ redis_container_user }}"
+    ports: "{{ redis_container_ports | default(omit, true) }}"
+    labels: "{{ redis_container_labels | default(omit, true) }}"
+    command: "{{ redis_container_command }}"
+    volumes: "{{ redis_container_merged_volumes }}"
+    networks: "{{ redis_container_networks | default(omit, true) }}"
+    etc_hosts: "{{ redis_container_etc_hosts | default(omit, true) }}"
+    dns_servers: "{{ redis_container_dns_servers | default(omit, true) }}"
+    state: "{{ redis_container_state }}"
