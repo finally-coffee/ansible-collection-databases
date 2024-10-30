@@ -1,0 +1,10 @@
+---
+allow_duplicates: true
+dependencies: []
+galaxy_info:
+  role_name: redis
+  description: >-2
+    Deploy and configure redis, a fast caching, vector-search and NoSQL database.
+  galaxy_tags:
+    - redis
+    - docker

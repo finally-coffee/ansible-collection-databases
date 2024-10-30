@@ -1,0 +1,10 @@
+---
+redis_run_user_id: >-2
+  {{ redis_user_info.uid | default(redis_user, true) }}
+redis_run_group_id: >-2
+  {{ redis_user_info.group | default(redis_user, true) }}
+redis_user_system: true
+redis_user_create_home: false
+redis_user_groups: ~
+redis_user_append_groups: >-2
+  {{ redis_user_groups | default(true, false) | bool }}

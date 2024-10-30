@@ -1,0 +1,6 @@
+---
+redis_states:
+  - present
+  - absent
+redis_deployment_methods:
+  - docker

@@ -1,0 +1,49 @@
+---
+redis_container_image_registry: docker.io
+redis_container_image_namespace: ~
+redis_container_image_name: redis
+redis_container_image_tag: ~
+redis_container_image_flavour: alpine
+redis_container_image_source: pull
+redis_container_image_force_source: >-2
+  {{ redis_container_image_tag | default(false, true) | bool }}
+redis_container_image: >-2
+  {{
+    ([
+      redis_container_image_registry | default([], true),
+      redis_container_image_namespace | default([], true),
+      redis_container_image_name,
+    ] | flatten | join('/'))
+    + ':' +
+    (redis_container_image_tag | default(
+      redis_version + (
+        ((redis_container_image_flavour is string)
+            and (redis_container_image_flavour | length > 0))
+        | ternary('-' + (redis_container_image_flavour | default('')), '')
+      ),
+      true,
+    ))
+  }}
+
+redis_container_name: "redis{{ redis_instance_suffix }}"
+redis_container_env: ~
+redis_container_user: >-2
+  {{ redis_run_user_id }}:{{ redis_run_group_id }}
+redis_container_ports: ~
+redis_container_labels: ~
+redis_container_volumes: ~
+redis_container_merged_volumes: >-2
+  {{ redis_container_base_volumes
+  + redis_container_volumes | default([], true) }}
+redis_container_command:
+  - "redis-server"
+  - "{{ redis_config_file }}"
+redis_container_networks: ~
+redis_container_etc_hosts: ~
+redis_container_dns_servers: ~
+redis_container_restart_policy: "unless-stopped"
+redis_container_state: >-2
+  {{ (redis_state == 'present') | ternary('started', 'absent') }}
+redis_container_base_volumes:
+  - "{{ redis_config_file }}:{{ redis_config_file }}:ro"
+  - "{{ redis_data_path }}:{{ redis_data_path }}:rw"

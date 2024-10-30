@@ -14,5 +14,6 @@ repository: https://git.finally.coffee/finallycoffee/databases
 issues: https://codeberg.org/finallycoffee/ansible-collection-databases/issues
 tags:
   - elasticsearch
+  - redis
   - mariadb
   - docker
