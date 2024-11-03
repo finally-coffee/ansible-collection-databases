@@ -10,3 +10,7 @@
 
 - [`mariadb`](roles/mariadb/README.md): deploy mariadb
   in a docker container
+
+- [`valkey`](roles/valkey/README.md): deploy and configure valkey,
+  an open source in-memory data store under BSD license, forked
+  from redis.

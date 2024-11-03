@@ -1,0 +1,26 @@
+---
+- name: Ensure container image '{{ valkey_container_image }}' is {{ valkey_state }}
+  community.docker.docker_image:
+    name: "{{ valkey_container_image }}"
+    state: "{{ valkey_state }}"
+    source: "{{ valkey_container_image_source }}"
+    force_source: "{{ valkey_container_image_force_source }}"
+  register: valkey_container_image_info
+  until: valkey_container_image_info is success
+  retries: 5
+  delay: 3
+
+- name: Ensure container '{{ valkey_container_name }}' is {{ valkey_container_state }}
+  community.docker.docker_container:
+    name: "{{ valkey_container_name }}"
+    image: "{{ valkey_container_image }}"
+    env: "{{ valkey_container_env | default(omit, true) }}"
+    user: "{{ valkey_container_user }}"
+    ports: "{{ valkey_container_ports | default(omit, true) }}"
+    labels: "{{ valkey_container_labels | default(omit, true) }}"
+    command: "{{ valkey_container_command }}"
+    volumes: "{{ valkey_container_merged_volumes }}"
+    networks: "{{ valkey_container_networks | default(omit, true) }}"
+    etc_hosts: "{{ valkey_container_etc_hosts | default(omit, true) }}"
+    dns_servers: "{{ valkey_container_dns_servers | default(omit, true) }}"
+    state: "{{ valkey_container_state }}"

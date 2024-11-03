@@ -1,0 +1,49 @@
+---
+valkey_container_image_registry: docker.io
+valkey_container_image_namespace: valkey
+valkey_container_image_name: valkey
+valkey_container_image_tag: ~
+valkey_container_image_flavour: alpine
+valkey_container_image_source: pull
+valkey_container_image_force_source: >-2
+  {{ valkey_container_image_tag | default(false, true) | bool }}
+valkey_container_image: >-2
+  {{
+    ([
+      valkey_container_image_registry | default([], true),
+      valkey_container_image_namespace | default([], true),
+      valkey_container_image_name,
+    ] | flatten | join('/'))
+    + ':' +
+    (valkey_container_image_tag | default(
+      valkey_version + (
+        ((valkey_container_image_flavour is string)
+            and (valkey_container_image_flavour | length > 0))
+        | ternary('-' + (valkey_container_image_flavour | default('')), '')
+      ),
+      true,
+    ))
+  }}
+
+valkey_container_name: "valkey{{ valkey_instance_suffix }}"
+valkey_container_env: ~
+valkey_container_user: >-2
+  {{ valkey_run_user_id }}:{{ valkey_run_group_id }}
+valkey_container_ports: ~
+valkey_container_labels: ~
+valkey_container_volumes: ~
+valkey_container_merged_volumes: >-2
+  {{ valkey_container_base_volumes
+  + valkey_container_volumes | default([], true) }}
+valkey_container_command:
+  - "valkey-server"
+  - "{{ valkey_config_file }}"
+valkey_container_networks: ~
+valkey_container_etc_hosts: ~
+valkey_container_dns_servers: ~
+valkey_container_restart_policy: "unless-stopped"
+valkey_container_state: >-2
+  {{ (valkey_state == 'present') | ternary('started', 'absent') }}
+valkey_container_base_volumes:
+  - "{{ valkey_config_file }}:{{ valkey_config_file }}:ro"
+  - "{{ valkey_data_path }}:{{ valkey_data_path }}:rw"

@@ -1,0 +1,6 @@
+---
+valkey_states:
+  - present
+  - absent
+valkey_deployment_methods:
+  - docker

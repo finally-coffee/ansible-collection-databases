@@ -1,0 +1,15 @@
+---
+valkey_version: "8.0.1"
+valkey_state: "present"
+valkey_instance: ~
+valkey_instance_suffix: >-2
+  {{ ((valkey_instance is string) and (valkey_instance | length > 0))
+    | ternary('-' + (valkey_instance | default('', true)), '') }}
+valkey_user: >-2
+  valkey{{ valkey_instance_suffix }}
+
+valkey_config_path: "/etc/valkey"
+valkey_config_file: >-2
+  {{ valkey_config_path }}/valkey{{ valkey_instance_suffix }}.conf
+valkey_data_path: "/var/lib/valkey{{ valkey_instance_suffix }}"
+valkey_deployment_method: docker

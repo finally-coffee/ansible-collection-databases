@@ -1,0 +1,11 @@
+---
+- name: Ensure valkey container '{{ valkey_container_name }}' is restarted
+  community.docker.docker_container:
+    name: "{{ valkey_container_name }}"
+    state: "{{ valkey_container_state }}"
+    restart: true
+  listen: valkey-restart
+  when:
+    - valkey_deployment_method == 'docker'
+    - valkey_state == 'present'
+  ignore_errors: "{{ ansible_check_mode }}"

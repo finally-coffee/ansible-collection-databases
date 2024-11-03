@@ -1,0 +1,10 @@
+---
+valkey_run_user_id: >-2
+  {{ valkey_user_info.uid | default(valkey_user, true) }}
+valkey_run_group_id: >-2
+  {{ valkey_user_info.group | default(valkey_user, true) }}
+valkey_user_system: true
+valkey_user_create_home: false
+valkey_user_groups: ~
+valkey_user_append_groups: >-2
+  {{ valkey_user_groups | default(true, false) | bool }}

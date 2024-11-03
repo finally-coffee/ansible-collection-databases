@@ -1,0 +1,68 @@
+---
+- name: Ensure state is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Unsupported state '{{ valkey_state }}'.
+      Supported states are {{ valkey_states | join(', ') }}
+  when: valkey_state not in valkey_states
+
+- name: Ensure deployment method is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Unsupported deployment method '{{ valkey_deployment_method }}'!
+      Supported methods are {{ valkey_deployment_method | join(', ') }}
+  when: valkey_deployment_method not in valkey_deployment_methods
+
+- name: Ensure valkey user '{{ valkey_user }}' is {{ valkey_state }}
+  ansible.builtin.user:
+    name: "{{ valkey_user }}"
+    state: "{{ valkey_state }}"
+    system: "{{ valkey_user_system }}"
+    create_home: "{{ valkey_user_create_home }}"
+    groups: "{{ valkey_user_groups | default(omit, true) }}"
+    append: "{{ valkey_user_append_groups | default(omit, true) }}"
+  register: valkey_user_info
+
+- name: Ensure valkey config file '{{ valkey_config_file }}' is {{ valkey_state }}
+  ansible.builtin.file:
+    path: "{{ valkey_config_file }}"
+    state: "{{ valkey_state }}"
+  when: valkey_state == 'absent'
+
+- name: Ensure valkey host directories are {{ valkey_state }}
+  ansible.builtin.file:
+    path: "{{ path.name }}"
+    state: >-2
+      {{ (valkey_state == 'present') | ternary('directory', 'absent') }}
+    owner: "{{ path.owner | default(valkey_run_user_id) }}"
+    group: "{{ path.group | default(valkey_run_group_id) }}"
+    mode: "{{ path.mode | default('0755') }}"
+  loop:
+    - name: "{{ valkey_config_path }}"
+    - name: "{{ valkey_data_path }}"
+  loop_control:
+    loop_var: "path"
+    label: "{{ path.name }}"
+
+- name: Ensure valkey config file '{{ valkey_config_file }}' is {{ valkey_state }}
+  ansible.builtin.copy:
+    content: |+2
+      {% for tuple in (valkey_merged_config | dict2items) %}
+      {% if tuple.value is string  or tuple.value is number %}
+      {{ tuple.key }} {{ tuple.value }}
+      {% else %}
+      {% for value in tuple.value %}
+      {{ tuple.key }} {{ value }}
+      {% endfor %}
+      {% endif %}
+      {% endfor %}
+    dest: "{{ valkey_config_file }}"
+    owner: "{{ valkey_run_user_id }}"
+    group: "{{ valkey_run_group_id }}"
+    mode: "0640"
+  when: valkey_state == 'present'
+  notify: valkey-restart
+
+- name: Deploy valkey using {{ valkey_deployment_method }}
+  ansible.builtin.include_tasks:
+    file: "deploy-{{ valkey_deployment_method }}.yml"

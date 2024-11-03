@@ -1,0 +1,11 @@
+---
+allow_duplicates: true
+dependencies: []
+galaxy_info:
+  role_name: valkey
+  description: >-2
+    An open source, in-memory datastore under BSD 3 license
+  galaxy_tags:
+    - valkey
+    - redis
+    - docker

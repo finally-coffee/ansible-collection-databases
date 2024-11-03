@@ -1,0 +1,41 @@
+---
+valkey_config_bind:
+  - "127.0.0.1"
+  - "-::1"
+valkey_config_protected_mode: true
+valkey_config_port: 6379
+valkey_config_unixsocket: ~
+valkey_config_unixsocketperm: '700'
+valkey_config_user:
+  - "default on +@all -DEBUG ~* nopass"
+valkey_config_databases: 16
+valkey_config_supervised: false
+valkey_config_daemonize: false
+valkey_config_dbfilename: dump.rdb
+valkey_config_dir: "{{ valkey_data_path }}"
+valkey_config_save: "3600 1 300 100 60 10000"
+valkey_config_appendfsync: everysec
+
+valkey_base_config:
+  bind: "{{ valkey_config_bind | join(' ') }}"
+  "protected-mode": "{{ valkey_config_protected_mode | bool | ternary('yes', 'no') }}"
+  port: "{{ valkey_config_port }}"
+  user: "{{ valkey_config_user }}"
+  databases: "{{ valkey_config_databases }}"
+  daemonize: "{{ valkey_config_daemonize | bool | ternary('yes', 'no') }}"
+  supervised: "{{ valkey_config_supervised | bool | ternary('yes', 'no') }}"
+  save: "{{ valkey_config_save }}"
+  dbfilename: "{{ valkey_config_dbfilename }}"
+  dir: "{{ valkey_config_dir }}"
+  appendfsync: "{{ valkey_config_appendfsync }}"
+
+valkey_config: ~
+valkey_merged_config: >-2
+  {{ valkey_base_config
+  | combine(({
+      'unixsocket': valkey_config_unixsocket,
+      'unixsocketperm': valkey_config_unixsocketperm,
+    })
+    if (valkey_config_unixsocket | default(false, true)) else {},
+    recursive=True)
+  | combine(valkey_config | default({}, true), recursive=True) }}

@@ -1,0 +1,6 @@
+---
+- name: Deploy and configure valkey
+  hosts: "{{ valkey_hosts | default('valkey', true) }}"
+  become: "{{ valkey_become | default(true, true) }}"
+  roles:
+    - finallycoffee.databases.valkey

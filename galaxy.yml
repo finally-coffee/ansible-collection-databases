@@ -16,4 +16,5 @@ tags:
   - elasticsearch
   - redis
   - mariadb
+  - valkey
   - docker
