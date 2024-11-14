@@ -1,0 +1,6 @@
+---
+postgresql_states:
+  - present
+  - absent
+postgresql_deployment_methods:
+  - docker

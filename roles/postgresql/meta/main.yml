@@ -1,0 +1,12 @@
+---
+allow_duplicates: true
+dependencies: []
+galaxy_info:
+  role_name: postgresql
+  description: >-2
+    PostgreSQL is the self-proclaimed 'worlds most advanced' open source relational database
+  galaxy_tags:
+    - postgresql
+    - postgres
+    - database
+    - docker

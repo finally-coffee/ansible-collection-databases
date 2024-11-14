@@ -1,0 +1,39 @@
+---
+postgresql_container_image_registry: docker.io
+postgresql_container_image_namespace: ~
+postgresql_container_image_name: postgres
+postgresql_container_image_tag: ~
+postgresql_container_image_source: pull
+postgresql_container_image_force_source: >-2
+  {{ postgresql_container_image_tag | default(false, true) | bool }}
+postgresql_container_image: >-2
+  {{
+    ([
+      postgresql_container_image_registry | default([], true),
+      postgresql_container_image_namespace | default([], true),
+      postgresql_container_image_name
+    ] | flatten | join('/'))
+    + ':' + postgresql_container_image_tag | default(
+      postgresql_version + (
+        ((postgresql_container_image_flavour is string)
+          and (postgresql_container_image_flavour | length > 0))
+        | ternary(
+          '_' + postgresql_container_image_flavour | default('', true),
+          '',
+        )
+      ),
+      true
+    )
+  }}
+
+postgresql_container_name: postgresql
+postgresql_container_env: ~
+postgresql_container_user: >-2
+  {{ postgresql_user_id }}:{{ postgresql_user_group_id }}
+postgresql_container_ports: ~
+postgresql_container_labels: ~
+postgresql_container_networks: ~
+postgresql_container_recreate: ~
+postgresql_container_restart_policy: "on-failure"
+postgresql_container_state: >-2
+  {{ (postgresql_state == 'present') | ternary('started', 'absent') }}

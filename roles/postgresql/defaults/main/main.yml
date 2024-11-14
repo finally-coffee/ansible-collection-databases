@@ -1,0 +1,13 @@
+---
+postgresql_user: postgresql
+postgresql_version: "17.0"
+postgresql_major_version: >-2
+  {{ postgresql_version | split('.') | first }}
+
+postgresql_config_path: >-2
+  /etc/postgresql/{{ postgresql_major_version }}
+postgresql_data_path: >-2
+  /var/lib/postgresql/{{ postgresql_major_version }}
+
+postgresql_state: present
+postgresql_deployment_method: docker

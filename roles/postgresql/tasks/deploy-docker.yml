@@ -1,0 +1,23 @@
+---
+- name: Ensure postgresql container image '{{ postgresql_container_image }}' is {{ postgresql_state }}
+  community.docker.docker_image:
+    name: "{{ postgresql_container_image }}"
+    state: "{{ postgresql_state }}"
+    source: "{{ postgresql_container_image_source }}"
+    force_source: "{{ postgresql_container_image_force_source }}"
+  register: postgresql_container_image_info
+  until: postgresql_container_image_info is success
+  retries: 5
+  delay: 4
+
+- name: Ensure postgresql container '{{ postgresql_container_name }}' is {{ postgresql_container_state }}
+  community.docker.docker_container:
+    name: "{{ postgresql_container_name }}"
+    image: "{{ postgresql_container_image }}"
+    env: "{{ postgresql_container_env | default(omit, true) }}"
+    user: "{{ postgresql_container_user | default(omit, true) }}"
+    ports: "{{ postgresql_container_ports | default(omit, true) }}"
+    labels: "{{ postgresql_container_labels | default(omit, true) }}"
+    networks: "{{ postgresql_container_networks | default(omit, true) }}"
+    restart_policy: "{{ postgresql_container_restart_policy | default(omit, true) }}"
+    state: "{{ postgresql_container_state }}"
