@@ -1,0 +1,10 @@
+---
+postgresql_user_system: true
+postgresql_user_create_home: false
+postgresql_user_groups: ~
+postgresql_user_append: ~
+
+postgresql_user_id: >-2
+  {{ postgresql_user_info.uid | default(postgresql_user, true) }}
+postgresql_user_group_id: >-2
+  {{ postgresql_user_info.group | default(postgresql_user, true) }}

@@ -1,0 +1,60 @@
+---
+- name: Configure postgresql
+  block:
+    - name: Ensure postgresql superuser is set
+      community.postgresql.postgresql_user:
+        name: "{{ postgresql_admin_role }}"
+        password: "{{ postgresql_superuser_password }}"
+        login_host: "{{ postgresql_login_host }}"
+      register: postgresql_superuser_password_result
+      until: "postgresql_superuser_password_result is succeeded"
+      retries: 10
+      delay: 2
+
+    - name: Ensure postgresql configuration is set
+      community.postgresql.postgresql_set:
+        name: "{{ option.key }}"
+        value: "{{ pg_option_value }}"
+        login_host: "{{ postgresql_login_host }}"
+        login_port: "{{ postgresql_config_port }}"
+        login_password: "{{ postgresql_superuser_password }}"
+      loop: "{{ postgresql_merged_config | dict2items }}"
+      loop_control:
+        loop_var: option
+      vars:
+        pg_option_value: >-2
+          {{
+            (option.value | join(' '))
+            if (option.value is iterable
+              and option.value is not string
+              and option.value is not mapping)
+            else option.value
+          }}
+      register: postgresql_config_results
+
+    - name: Ensure postgresql configuration is reloaded
+      community.postgresql.postgresql_query:
+        db: "postgres"
+        query: "SELECT pg_reload_conf();"
+        login_host: "{{ postgresql_login_host }}"
+        login_port: "{{ postgresql_config_port }}"
+        login_password: "{{ postgresql_superuser_password }}"
+
+    - name: Ensure restart handler is fired if required
+      debug:
+        msg: "{{ result.option.key }} changed! Restart required: {{ result.restart_required }}"
+      when: result.changed
+      changed_when: "{{ result.restart_required }}"
+      notify: postgresql_restart
+      loop: "{{ postgresql_config_results.results }}"
+      loop_control:
+        loop_var: result
+        label: "{{ result.option.key }}"
+  when: postgresql_state == 'present'
+  vars:
+    postgresql_login_host: >-2
+      {{
+        (postgresql_config_unix_socket_directories | first)
+        if postgresql_config_connect_socket else 
+        (postgresql_container_info.container.NetworkSettings.IPAddress)
+      }}

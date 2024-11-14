@@ -1,0 +1,17 @@
+---
+postgresql_config_connect_socket: true
+postgresql_config_unix_socket_directories:
+  - "/var/run/postgresql"
+postgresql_config_listen_addresses:
+  - '*'
+postgresql_config_port: 5432
+
+postgresql_base_config:
+  listen_addresses: "{{ postgresql_config_listen_addresses }}"
+  unix_socket_directories: "{{ postgresql_config_unix_socket_directories }}"
+  port: "{{ postgresql_config_port }}"
+postgresql_merged_config: >-2
+  {{ postgresql_base_config | combine(
+    postgresql_config | default({}, true),
+    recursive=True
+  ) }}

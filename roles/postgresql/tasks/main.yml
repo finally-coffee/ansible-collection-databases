@@ -1,0 +1,72 @@
+---
+- name: Ensure state is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Invalid state '{{ postgresql_state }}'! Supported
+      states are {{ postgresql_states | join(', ') }}.
+  when: postgresql_state not in postgresql_states
+
+- name: Ensure deployment method is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Unsupported deployment method '{{ postgresql_deployment_method }}!
+      Supported deployment methods are {{ postgresql_deployment_methods | join(', ') }}.
+  when: postgresql_deployment_method not in postgresql_deployment_methods
+
+- name: Ensure postgresql user '{{ postgresql_user }}' is {{ postgresql_state }}
+  ansible.builtin.user:
+    name: "{{ postgresql_user }}"
+    state: "{{ postgresql_state }}"
+    system: "{{ postgresql_user_system | default(omit, true) }}"
+    create_home: "{{ postgresql_user_create_home | default(omit, true) }}"
+    groups: "{{ postgresql_user_groups | default(omit, true) }}"
+    append: "{{ postgresql_user_append | default(omit, true) }}"
+  register: postgresql_user_info
+
+- name: Ensure directories are {{ postgresql_state }}
+  ansible.builtin.file:
+    path: "{{ path.name }}"
+    state: "{{ (postgresql_state == 'present') | ternary('directory', 'absent') }}"
+    owner: "{{ path.owner | default(postgresql_user_id, true) }}"
+    group: "{{ path.group | default(postgresql_user_group_id, true) }}"
+    mode: "{{ path.mode | default('0755', true) }}"
+  loop:
+    - name: "{{ postgresql_config_path }}"
+    - name: "{{ postgresql_data_path }}"
+      mode: "0700"
+  loop_control:
+    loop_var: path
+    label: "{{ path.name }}"
+
+- name: Check for existing PG_VERSION file
+  ansible.builtin.stat:
+    path: "{{ postgresql_data_path }}/PG_VERSION"
+  register: postgresql_data_dir_version_info
+
+- name: Read existing PG_VERSION file
+  ansible.builtin.slurp:
+    path: "{{ postgresql_data_path }}/PG_VERSION"
+  register: postgresql_data_dir_version_content
+  when:
+    - postgresql_data_dir_version_info.stat.exists
+
+- name: Prevent major version changes
+  ansible.builtin.fail:
+    msg: >-2
+      Mismatched postgresql version for the data directory!
+      Aborting...
+  when:
+    - postgresql_data_dir_version_info.stat.exists
+    - "(postgresql_data_dir_version_content.content | b64decode | int) != (postgresql_major_version | int)"
+
+- name: Prepare authentication and authorization for database admin role
+  ansible.builtin.include_tasks:
+    file: "prepare.yml"
+
+- name: Deploy postgresql using {{ postgresql_deployment_method }}
+  ansible.builtin.include_tasks:
+    file: "deploy-{{ postgresql_deployment_method }}.yml"
+
+- name: Configure postgresql
+  ansible.builtin.include_tasks:
+    file: "configure.yml"

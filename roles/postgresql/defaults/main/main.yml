@@ -1,0 +1,33 @@
+---
+postgresql_user: postgresql
+postgresql_version: >-2
+  {{ postgresql_versions[postgresql_major_version | string] }}
+postgresql_major_version: 16
+postgresql_versions:
+  "17": "17.2"
+  "16": "16.6"
+  "15": "15.10"
+  "14": "14.15"
+
+postgresql_config_path: >-2
+  /etc/postgresql/{{ postgresql_major_version }}
+postgresql_data_path: >-2
+  /var/lib/postgresql/{{ postgresql_major_version }}
+postgresql_pg_ident_conf_file: >-2
+  {{ postgresql_config_path }}/pg_ident.conf
+postgresql_pg_hba_conf_file: >-2
+  {{ postgresql_config_path }}/pg_hba.conf
+postgresql_admin_role: "postgres"
+postgresql_admin_role_contype: local
+postgresql_admin_role_method: peer
+postgresql_admin_local_user: >-2
+  {{ ansible_facts['user_id'] }}
+postgresql_admin_role_mapping_name: >-2
+  {{ postgresql_admin_local_user }}_{{ postgresql_admin_role }}
+postgresql_admin_pg_ident_conf: "{{ postgresql_admin_role_mapping_name }}\t{{ postgresql_admin_local_user }}\t{{ postgresql_admin_role }}"
+postgresql_admin_pg_hba_conf_options: >-2
+  map={{ postgresql_admin_role_mapping_name }}
+postgresql_superuser_password: ~
+
+postgresql_state: present
+postgresql_deployment_method: docker

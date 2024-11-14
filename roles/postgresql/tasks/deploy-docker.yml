@@ -1,0 +1,95 @@
+---
+- name: Ensure postgresql container image '{{ postgresql_container_image }}' is {{ postgresql_state }}
+  community.docker.docker_image:
+    name: "{{ postgresql_container_image }}"
+    state: "{{ postgresql_state }}"
+    source: "{{ postgresql_container_image_source }}"
+    force_source: "{{ postgresql_container_image_force_source }}"
+  register: postgresql_container_image_info
+  until: postgresql_container_image_info is success
+  retries: 5
+  delay: 4
+
+- name: Ensure /etc/passwd for container is {{ postgresql_state }}
+  ansible.builtin.template:
+    src: "postgresql-passwd.j2"
+    dest: "{{ postgresql_container_passwd_file }}"
+    owner: "{{ postgresql_user_id }}"
+    group: "{{ postgresql_user_group_id }}"
+    mode: "0640"
+  when: postgresql_state == 'present'
+
+- name: Ensure systemd unit to correct path permissions is {{ postgresql_state }}
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ postgresql_systemd_tmpfile_socket_correction_unit_name }}.service"
+    content: |+2
+      [Unit]
+      Description="Ensure permissions on {{ postgresql_container_unix_socket_path }}"
+      After=systemd-tmpfiles-setup.service
+      Before=docker.service
+      
+      [Service]
+      Type=exec
+      RemainAfterExit=yes
+      ExecStart=/bin/bash -c 'mkdir {{ postgresql_container_unix_socket_path }} ||:; chown {{ postgresql_user }}:{{ postgresql_user }} {{ postgresql_container_unix_socket_path }}'
+      
+      [Install]
+      WantedBy=multi-user.target
+  when:
+    - ansible_facts['service_mgr'] == 'systemd'
+    - postgresql_state == 'present'
+  register: postgresql_systemd_tmpfile_correction_unit_info
+
+- name: Ensure systemd is reloaded
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when:
+    - postgresql_systemd_tmpfile_correction_unit_info.changed
+
+- name: Ensure systemd unit {{ postgresql_systemd_tmpfile_socket_correction_unit_name }} is {{ postgresql_container_state }}
+  ansible.builtin.systemd:
+    name: "{{ postgresql_systemd_tmpfile_socket_correction_unit_name }}.service"
+    state: "{{ postgresql_container_state }}"
+  when: ansible_facts['service_mgr'] == 'systemd'
+
+- name: Ensure systemd unit {{ postgresql_systemd_tmpfile_socket_correction_unit_name }} is {{ postgresql_container_state }}
+  ansible.builtin.systemd:
+    name: "{{ postgresql_systemd_tmpfile_socket_correction_unit_name }}.service"
+    enabled: "{{ postgresql_state == 'present' }}"
+  when: ansible_facts['service_mgr'] == 'systemd'
+
+- name: Lookup {{ postgresql_data_path }}/global
+  ansible.builtin.stat:
+    path: "{{ postgresql_data_path }}/global"
+    get_checksum: false
+  register: postgresql_global_data_info
+
+- name: Initialize database if empty
+  ansible.builtin.include_tasks:
+    file: "initialize-docker.yml"
+  when:
+    - postgresql_state == 'present'
+    - not postgresql_global_data_info.stat.exists
+    - postgresql_global_data_info.stat.isdir is defined
+    - not postgresql_global_data_info.stat.isdir
+
+- name: Ensure postgresql container '{{ postgresql_container_name }}' is {{ postgresql_container_state }}
+  community.docker.docker_container:
+    name: "{{ postgresql_container_name }}"
+    image: "{{ postgresql_container_image }}"
+    env: "{{ postgresql_container_env | default(omit, true) }}"
+    user: "{{ postgresql_container_user | default(omit, true) }}"
+    ports: "{{ postgresql_container_ports | default(omit, true) }}"
+    labels: "{{ postgresql_container_labels | default(omit, true) }}"
+    volumes: "{{ postgresql_container_merged_volumes }}"
+    recreate: "{{ postgresql_container_recreate | default(omit, true) }}"
+    networks: "{{ postgresql_container_networks | default(omit, true) }}"
+    etc_hosts: "{{ postgresql_container_etc_hosts | default(omit, true) }}"
+    memory: "{{ postgresql_container_memory | default(omit, true) }}"
+    memory_reservation: "{{ postgresql_container_memory_reservation | default(omit, true) }}"
+    oom_killer: "{{ postgresql_container_oom_killer | default(omit, true) }}"
+    oom_score_adj: "{{ postgresql_container_oom_score_adj | default(omit, true) }}"
+    shm_size: "{{ postgresql_container_shm_size | default(omit, true) }}"
+    ulimits: "{{ postgresql_container_ulimits | default(omit, true) }}"
+    restart_policy: "{{ postgresql_container_restart_policy | default(omit, true) }}"
+    state: "{{ postgresql_container_state }}"

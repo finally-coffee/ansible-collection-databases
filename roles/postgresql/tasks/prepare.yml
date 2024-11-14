@@ -1,0 +1,35 @@
+---
+- name: Ensure postgresql config files are {{ postgresql_state }}
+  ansible.builtin.lineinfile:
+    path: "{{ file.name }}"
+    insertafter: "{{ file.insert_after | default(omit) }}"
+    insertbefore: "{{ file.insert_before | default(omit) }}"
+    line: "{{ file.line }}"
+    owner: "{{ postgresql_user_id }}"
+    group: "{{ postgresql_user_group_id }}"
+    create: true
+  loop_control:
+    loop_var: file
+    label: "{{ file.name }}"
+  loop:
+    - name: "{{ postgresql_pg_hba_conf_file }}"
+      insert_before: "BOF"
+      line: "# Ansible managed"
+    - name: "{{ postgresql_pg_ident_conf_file }}"
+      insert_before: "BOF"
+      line: "# Ansible managed"
+    - name: "{{ postgresql_pg_ident_conf_file }}"
+      insert_after: "# Ansible managed"
+      line: "{{ postgresql_admin_pg_ident_conf }}"
+  when: postgresql_state == 'present'
+  notify: postgresql_restart
+
+- name: Configure permissions for postgresql admin role
+  community.postgresql.postgresql_pg_hba:
+    dest: "{{ postgresql_pg_hba_conf_file }}"
+    contype: "{{ postgresql_admin_role_contype }}"
+    users: "{{ postgresql_admin_role }}"
+    method: "{{ postgresql_admin_role_method }}"
+    options: "{{ postgresql_admin_pg_hba_conf_options }}"
+  when: postgresql_state == 'present'
+  notify: postgresql_restart

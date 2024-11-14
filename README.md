@@ -11,6 +11,9 @@
 - [`mariadb`](roles/mariadb/README.md): deploy mariadb
   in a docker container
 
+- [`postgresql`](roles/postgresql/README.md): deploy postgresql,
+  the worlds most advances open-source relational database
+
 - [`valkey`](roles/valkey/README.md): deploy and configure valkey,
   an open source in-memory data store under BSD license, forked
   from redis.
