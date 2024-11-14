@@ -1,0 +1,49 @@
+---
+- name: Ensure postgresql superuser is set
+  community.postgresql.postgresql_user:
+    name: "{{ postgresql_admin_role }}"
+    password: "{{ postgresql_superuser_password }}"
+    login_host: >-2
+      {{
+        (postgresql_config_unix_socket_directories | first)
+        if postgresql_config_connect_socket else 
+        (postgresql_container_info.container.NetworkSettings.IPAddress)
+      }}
+  register: postgresql_superuser_password_result
+  until: "postgresql_superuser_password_result is succeeded"
+  retries: 10
+  delay: 2
+
+- name: Ensure postgresql configuration is set
+  community.postgresql.postgresql_set:
+    name: "{{ option.key }}"
+    value: "{{ option.value }}"
+    login_host: >-2
+      {{
+        (postgresql_config_unix_socket_directories | first)
+        if postgresql_config_connect_socket else 
+        (postgresql_container_info.container.NetworkSettings.IPAddress)
+      }}
+    login_port: "{{ postgresql_config_port }}"
+    login_password: #TODO
+  loop: "{{ postgresql_merged_options | dict2items }}"
+  loop_control:
+    loop_var: option
+
+- name: Ensure postgresql configuration is reloaded
+  community.postgresql.postgresql_query:
+    query: "SELECT pg_reload_conf();"
+    login_host: #TODO
+    login_port: #TODO
+    login_password: #TODO
+
+- name: Ensure restart handler is fired if required
+  debug:
+    msg: "{{ result.option.key }} changed! Restart required: {{ result.restart_required }}"
+  when: result.changed
+  changed_when: "{{ result.restart_required }}"
+  notify: postgresql_restart
+  loop: "{{ postgresql_config_results }}"
+  loop_control:
+    loop_var: result
+    label: "{{ result.option.name }}"

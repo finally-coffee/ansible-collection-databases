@@ -1,0 +1,73 @@
+---
+postgresql_container_image_registry: docker.io
+postgresql_container_image_namespace: ~
+postgresql_container_image_name: postgres
+postgresql_container_image_tag: ~
+postgresql_container_image_source: pull
+postgresql_container_image_force_source: >-2
+  {{ postgresql_container_image_tag | default(false, true) | bool }}
+postgresql_container_image: >-2
+  {{
+    ([
+      postgresql_container_image_registry | default([], true),
+      postgresql_container_image_namespace | default([], true),
+      postgresql_container_image_name
+    ] | flatten | join('/'))
+    + ':' + postgresql_container_image_tag | default(
+      postgresql_version + (
+        ((postgresql_container_image_flavour is string)
+          and (postgresql_container_image_flavour | length > 0))
+        | ternary(
+          '_' + postgresql_container_image_flavour | default('', true),
+          '',
+        )
+      ),
+      true
+    )
+  }}
+
+postgresql_container_name: "postgresql-{{ postgresql_major_version }}"
+postgresql_container_env: ~
+postgresql_container_user: >-2
+  {{ postgresql_user_id }}:{{ postgresql_user_group_id }}
+postgresql_container_ports: ~
+postgresql_container_labels: ~
+postgresql_container_networks: ~
+postgresql_container_recreate: ~
+postgresql_container_etc_hosts: ~
+postgresql_container_restart_policy: "on-failure"
+postgresql_container_state: >-2
+  {{ (postgresql_state == 'present') | ternary('started', 'absent') }}
+postgresql_container_volumes: ~
+postgresql_container_unix_socket_path: >-2
+  {{ postgresql_config_unix_socket_directories | first }}
+postgresql_container_base_volumes:
+  - "{{ postgresql_container_passwd_file }}:/etc/passwd:ro"
+  - "{{ postgresql_data_path }}:{{ postgresql_container_data_dir }}:Z"
+postgresql_container_config_volumes:
+  - "{{ postgresql_pg_hba_conf_file }}:{{ postgresql_container_data_dir }}/pg_hba.conf:ro"
+  - "{{ postgresql_pg_ident_conf_file }}:{{ postgresql_container_data_dir }}/pg_ident.conf:ro"
+postgresql_container_unix_socket_volumes:
+  - "{{ postgresql_container_unix_socket_path }}:{{ postgresql_container_unix_socket_path }}:rw,rshared"
+postgresql_container_initdb_volumes: >-2
+  {{ postgresql_container_base_volumes
+    + postgresql_container_unix_socket_volumes
+    + (postgresql_container_volumes | default([], true)) }}
+postgresql_container_merged_volumes: >-2
+  {{ postgresql_container_base_volumes
+    + postgresql_container_config_volumes
+    + (postgresql_container_unix_socket_volumes if postgresql_config_connect_socket else [])
+    + (postgresql_container_volumes | default([], true)) }}
+postgresql_systemd_tmpfile_socket_correction_unit_name: >-2
+  {{ postgresql_container_unix_socket_path | split('/') | reject('eq', '') | join('-') }}
+
+# (Memory) performance tuning
+postgresql_container_memory: ~
+postgresql_container_memory_reservation: ~
+postgresql_container_shm_size: ~
+postgresql_container_oom_kill: ~
+postgresql_container_oom_score_adj: ~
+postgresql_container_ulimits: ~
+
+postgresql_container_passwd_file: "{{ postgresql_config_path }}/passwd"
+postgresql_container_data_dir: "/var/lib/postgresql/data"

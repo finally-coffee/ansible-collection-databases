@@ -1,0 +1,12 @@
+---
+- name: Restart postgresql container '{{ postgresql_container_name }}' (docker)
+  community.docker.docker_container:
+    name: "{{ postgresql_container_name }}"
+    state: "{{ postgresql_container_state }}"
+    restart: true
+    comparisons:
+      '*': "ignore"
+  when:
+    - postgresql_deployment_method == 'docker'
+    - postgresql_container_state not in ['absent', 'stopped']
+  listen: postgresql_restart

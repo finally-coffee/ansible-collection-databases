@@ -1,0 +1,6 @@
+---
+- name: Deploy and configure PostgreSQL
+  hosts: "{{ postgresql_hosts | default('postgresql', true) }}"
+  become: "{{ postgresql_become | default(true, true) }}"
+  roles:
+    - role: finallycoffee.databases.postgresql
