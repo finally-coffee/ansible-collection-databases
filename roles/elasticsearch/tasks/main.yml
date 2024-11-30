@@ -34,6 +34,5 @@
     volumes: "{{ elasticsearch_container_volumes }}"
     ulimits: "{{ elasticsearch_container_ulimits }}"
     networks: "{{ elasticsearch_container_networks | default(omit, True) }}"
-    purge_networks: "{{ elasticsearch_container_purge_networks | default(omit, True) }}"
     restart_policy: "{{ elasticsearch_container_restart_policy }}"
     state: "{{ elasticsearch_container_state }}"
