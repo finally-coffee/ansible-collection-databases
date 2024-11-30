@@ -16,6 +16,5 @@
     volumes: "{{ mariadb_container_volumes }}"
     networks: "{{ mariadb_container_networks | default(omit, true) }}"
     etc_hosts: "{{ mariadb_container_etc_hosts | default(omit, true) }}"
-    purge_networks: "{{ mariadb_container_purge_networks | default(omit, true) }}"
     restart_policy: "{{ mariadb_container_restart_policy }}"
     state: "{{ mariadb_container_state }}"
