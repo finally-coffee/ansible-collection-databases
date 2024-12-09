@@ -1,5 +1,5 @@
 ---
-mariadb_version: "10.11.9"
+mariadb_version: "10.11.10"
 mariadb_base_path: /var/lib/mariadb
 mariadb_data_path: >-2
   {{ mariadb_base_path }}/{{ mariadb_version | split('.') | first }}
