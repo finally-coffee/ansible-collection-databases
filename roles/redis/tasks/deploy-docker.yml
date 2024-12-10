@@ -23,4 +23,5 @@
     networks: "{{ redis_container_networks | default(omit, true) }}"
     etc_hosts: "{{ redis_container_etc_hosts | default(omit, true) }}"
     dns_servers: "{{ redis_container_dns_servers | default(omit, true) }}"
+    restart_policy: "{{ redis_container_restart_policy | default(omit, true) }}"
     state: "{{ redis_container_state }}"
