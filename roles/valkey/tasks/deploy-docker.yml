@@ -23,4 +23,5 @@
     networks: "{{ valkey_container_networks | default(omit, true) }}"
     etc_hosts: "{{ valkey_container_etc_hosts | default(omit, true) }}"
     dns_servers: "{{ valkey_container_dns_servers | default(omit, true) }}"
+    restart_policy: "{{ valkey_container_restart_policy | default(omit, true) }}"
     state: "{{ valkey_container_state }}"
