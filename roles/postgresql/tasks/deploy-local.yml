@@ -1,0 +1,11 @@
+---
+- name: Ensure postgresql package is {{ postgresql_state }}
+  ansible.builtin.package:
+    name: "{{ postgresql_os_package_name }}"
+    state: "{{ postgresql_state }}"
+
+- name: Ensure postgresql systemd unit is {{ (postgresql_state == 'present') | ternary('enabled', 'disabled') }}
+  ansible.builtin.systemd:
+    name: "{{ postgresql_systemd_service_name }}"
+    enabled: "{{ (postgresql_state == 'present') }}"
+  when: ansible_facts['service_mgr'] == 'systemd'

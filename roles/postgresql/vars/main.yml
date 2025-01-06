@@ -4,3 +4,4 @@ postgresql_states:
   - absent
 postgresql_deployment_methods:
   - docker
+  - local
