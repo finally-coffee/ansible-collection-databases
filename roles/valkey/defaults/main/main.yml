@@ -1,5 +1,5 @@
 ---
-valkey_version: "8.0.1"
+valkey_version: "8.0.2"
 valkey_state: "present"
 valkey_instance: ~
 valkey_instance_suffix: >-2
