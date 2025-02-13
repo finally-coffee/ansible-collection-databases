@@ -1,4 +1,18 @@
 ---
+- name: Ensure mariadb state parameter is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Unknown state '{{ mariadb_state }}'!
+      Supported states are {{ mariadb_states | join(', ') }}
+  when: mariadb_state not in mariadb_states
+
+- name: Ensure deployment method is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Unknown deployment method '{{ mariadb_deployment_method }}'!
+      Supported deployment methods are {{ mariadb_deployment_methods | join(', ') }}
+  when: mariadb_deployment_method not in mariadb_deployment_methods
+
 - name: Ensure mariadb container image '{{ mariadb_container_image }}' is {{ mariadb_state }}
   community.docker.docker_image:
     name: "{{ mariadb_container_image }}"

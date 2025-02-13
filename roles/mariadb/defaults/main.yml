@@ -4,6 +4,7 @@ mariadb_base_path: /var/lib/mariadb
 mariadb_data_path: >-2
   {{ mariadb_base_path }}/{{ mariadb_version | split('.') | first }}
 mariadb_state: present
+mariadb_deployment_method: docker
 
 mariadb_root_password: ~
 mariadb_database: ~

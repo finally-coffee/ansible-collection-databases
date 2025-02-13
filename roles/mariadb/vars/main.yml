@@ -1,4 +1,9 @@
 ---
+mariadb_states:
+  - present
+  - absent
+mariadb_deployment_methods:
+  - docker
 
 mariadb_container_database_environment:
   MARIADB_DATABASE: "{{ mariadb_database }}"
