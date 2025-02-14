@@ -4,6 +4,7 @@ mariadb_states:
   - absent
 mariadb_deployment_methods:
   - docker
+  - podman
 
 mariadb_container_database_environment:
   MARIADB_DATABASE: "{{ mariadb_database }}"
