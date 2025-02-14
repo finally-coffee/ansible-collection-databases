@@ -8,6 +8,7 @@ description: Collection for deploying and configuring databases
 dependencies:
   "community.docker": "^4.0.0"
   "community.postgresql": "^3.9.0"
+  "containers.podman": "^1.16.0"
 license_file: LICENSE.md
 build_ignore:
 - '*.tar.gz'
