@@ -1,0 +1,24 @@
+---
+- name: Configure postgresql users
+  hosts: "{{ postgresql_hosts | default('postgresql', true) }}"
+  become: "{{ postgresql_become | default(false, true) }}"
+  gather_facts: "{{ postgresql_gather_facts | default(false, true) }}"
+  tasks:
+    - name: Configure individual postgresql user
+      community.postgresql.postgresql_user:
+        name: "{{ postgresql_user.name }}"
+        state: "{{ postgresql_user_state }}"
+        password: "{{ postgresql_user_password }}"
+        login_host: "{{ postgresql_connection_host | default(omit, true) }}"
+        login_port: "{{ postgresql_connection_port | default(omit, true) }}"
+        login_unix_socket: "{{ postgresql_connection_unix_socket | default(omit, true) }}"
+        login_user: "{{ postgresql_connection_user | default(omit, true) }}"
+        login_password: "{{ postgresql_connection_password | default(omit, true) }}"
+      vars:
+        postgresql_user_state: "{{ postgresql_user.state | default('present', true) }}"
+        postgresql_user_password: >-2
+          {{ (postgresql_user_state != 'absent') | ternary(postgresql_user.password, omit) }}
+      loop: "{{ postgresql_users | default([]) }}"
+      loop_control:
+        loop_var: postgresql_user
+        label: "{{ postgresql_user.name }}"

@@ -1,0 +1,24 @@
+---
+- import_playbook: finallycoffee.databases.postgresql_user
+  vars:
+    postgresql_users:
+      - name: "{{ postgresql_client_username }}"
+        password: "{{ postgresql_client_password }}"
+- import_playbook: finallycoffee.databases.postgresql_database
+  vars:
+    postgresql_databases:
+      - name: "{{ postgresql_client_database }}"
+        owner: "{{ postgresql_client_username }}"
+        encoding: "{{ postgresql_client_database_encoding | default('UTF8', true) }}"
+        lc_ctype: "{{ postgresql_client_database_lc_ctype | default('en_US.UTF-8', true) }}"
+        lc_collate: "{{ postgresql_client_database_lc_collate | default('en_US.UTF-8', true) }}"
+- import_playbook: finallycoffee.databases.postgresql_host_based_authentication
+  vars:
+    postgresql_authentications:
+      - users: "{{ postgresql_client_username }}"
+        databases: "{{ postgresql_client_database }}"
+        contype: "{{ postgresql_client_database_contype | default('local') }}"
+        method: "{{ postgresql_client_database_auth_method | default('md5') }}"
+        options: "{{ postgresql_client_options | default(false, true) }}"
+        address: "{{ postgresql_client_address | default(false, true) }}"
+        netmask: "{{ postgresql_client_netmask | default(false, true) }}"

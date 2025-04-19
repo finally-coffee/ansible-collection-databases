@@ -1,0 +1,23 @@
+---
+- name: Configure postgresql host based authentications
+  hosts: "{{ postgresql_hosts | default('postgresql', true) }}"
+  become: "{{ postgresql_become | default(false, true) }}"
+  gather_facts: "{{ postgresql_gather_facts | default(false, true) }}"
+  tasks:
+    - name: Configure individual postgresql host based authentication
+      community.postgresql.postgresql_pg_hba:
+        dest: "{{ postgresql_pg_hba_conf_file }}"
+        users: "{{ postgresql_auth.users | default(omit) }}"
+        databases: "{{ postgresql_auth.databases | default(omit) }}"
+        contype: "{{ postgresql_auth.contype }}"
+        state: "{{ postgresql_auth_state }}"
+        method: "{{ postgresql_auth.method | default(omit, true) }}"
+        options: "{{ postgresql_auth.options | default(omit, true) }}"
+        address: "{{ postgresql_auth.address | default(omit, true) }}"
+        netmask: "{{ postgresql_auth.netmask | default(omit, true) }}"
+      vars:
+        postgresql_auth_state: "{{ postgresql_auth.state | default('present', true) }}"
+      loop: "{{ postgresql_authentications | default([]) }}"
+      loop_control:
+        loop_var: postgresql_auth
+        label: "{{ postgresql_auth.users }}@{{ postgresql_auth.databases }}"

@@ -1,0 +1,4 @@
+---
+- import_playbook: finallycoffee.databases.postgresql_user
+- import_playbook: finallycoffee.databases.postgresql_database
+- import_playbook: finallycoffee.databases.postgresql_host_based_authentication

@@ -1,0 +1,26 @@
+---
+- name: Configure postgresql databases
+  hosts: "{{ postgresql_hosts | default('postgresql', true) }}"
+  become: "{{ postgresql_become | default(false, true) }}"
+  gather_facts: "{{ postgresql_gather_facts | default(false, true) }}"
+  tasks:
+    - name: Configure individual postgresql database
+      community.postgresql.postgresql_db:
+        name: "{{ postgresql_database.name }}"
+        owner: "{{ postgresql_database.owner | default(omit) }}"
+        state: "{{ postgresql_database_state }}"
+        template: "{{ postgresql_database.template | default(omit, true) }}"
+        encoding: "{{ postgresql_database.encoding | default(omit, true) }}"
+        lc_ctype: "{{ postgresql_database.lc_ctype | default(omit, true) }}"
+        lc_collate: "{{ postgresql_database.lc_collate | default(omit, true) }}"
+        login_host: "{{ postgresql_connection_host | default(omit, true) }}"
+        login_port: "{{ postgresql_connection_port | default(omit, true) }}"
+        login_unix_socket: "{{ postgresql_connection_unix_socket | default(omit, true) }}"
+        login_user: "{{ postgresql_connection_user | default(omit, true) }}"
+        login_password: "{{ postgresql_connection_password | default(omit, true) }}"
+      vars:
+        postgresql_database_state: "{{ postgresql_database.state | default('present', true) }}"
+      loop: "{{ postgresql_databases | default([]) }}"
+      loop_control:
+        loop_var: postgresql_database
+        label: "{{ postgresql_database.name }}"
