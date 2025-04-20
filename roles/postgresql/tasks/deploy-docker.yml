@@ -51,12 +51,14 @@
     name: "{{ postgresql_systemd_tmpfile_socket_correction_unit_name }}.service"
     state: "{{ postgresql_container_state }}"
   when: ansible_facts['service_mgr'] == 'systemd'
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Ensure systemd unit {{ postgresql_systemd_tmpfile_socket_correction_unit_name }} is {{ postgresql_container_state }}
   ansible.builtin.systemd:
     name: "{{ postgresql_systemd_tmpfile_socket_correction_unit_name }}.service"
     enabled: "{{ postgresql_state == 'present' }}"
   when: ansible_facts['service_mgr'] == 'systemd'
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Lookup {{ postgresql_data_path }}/global
   ansible.builtin.stat:

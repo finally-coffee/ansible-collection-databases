@@ -18,7 +18,7 @@ postgresql_container_image: >-2
         ((postgresql_container_image_flavour is string)
           and (postgresql_container_image_flavour | length > 0))
         | ternary(
-          '_' + postgresql_container_image_flavour | default('', true),
+          '-' + postgresql_container_image_flavour | default('', true),
           '',
         )
       ),
@@ -48,7 +48,7 @@ postgresql_container_config_volumes:
   - "{{ postgresql_pg_hba_conf_file }}:{{ postgresql_container_data_dir }}/pg_hba.conf:ro"
   - "{{ postgresql_pg_ident_conf_file }}:{{ postgresql_container_data_dir }}/pg_ident.conf:ro"
 postgresql_container_unix_socket_volumes:
-  - "{{ postgresql_container_unix_socket_path }}:{{ postgresql_container_unix_socket_path }}:rw,rshared"
+  - "{{ postgresql_unix_socket_path }}:{{ postgresql_container_unix_socket_path }}:rw,rshared"
 postgresql_container_initdb_volumes: >-2
   {{ postgresql_container_base_volumes
     + postgresql_container_unix_socket_volumes
@@ -69,5 +69,7 @@ postgresql_container_oom_kill: ~
 postgresql_container_oom_score_adj: ~
 postgresql_container_ulimits: ~
 
+postgresql_container_user_name: "postgres"
+postgresql_unix_socket_path: "{{ postgresql_config_unix_socket }}"
 postgresql_container_passwd_file: "{{ postgresql_config_path }}/passwd"
 postgresql_container_data_dir: "/var/lib/postgresql/data"

@@ -54,7 +54,13 @@
   vars:
     postgresql_login_host: >-2
       {{
-        (postgresql_config_unix_socket_directories | first)
+        (
+          (postgresql_deployment_method in ['docker'])
+          | ternary(
+            postgresql_unix_socket_path,
+            (postgresql_config_unix_socket_directories | first)
+          )
+        )
         if postgresql_config_connect_socket else 
         (postgresql_container_info.container.NetworkSettings.IPAddress)
       }}

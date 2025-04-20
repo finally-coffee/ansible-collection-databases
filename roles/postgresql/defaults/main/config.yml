@@ -1,7 +1,8 @@
 ---
 postgresql_config_connect_socket: true
+postgresql_config_unix_socket: "/var/run/postgresql"
 postgresql_config_unix_socket_directories:
-  - "/var/run/postgresql"
+  - "{{ postgresql_config_unix_socket }}"
 postgresql_config_listen_addresses:
   - '*'
 postgresql_config_port: 5432
