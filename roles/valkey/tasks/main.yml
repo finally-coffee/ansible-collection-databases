@@ -39,6 +39,8 @@
     mode: "{{ path.mode | default('0755') }}"
   loop:
     - name: "{{ valkey_config_path }}"
+      owner: "{{ valkey_config_path_owner }}"
+      group: "{{ valkey_config_path_group }}"
     - name: "{{ valkey_data_path }}"
   loop_control:
     loop_var: "path"

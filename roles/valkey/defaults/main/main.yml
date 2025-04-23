@@ -9,6 +9,8 @@ valkey_user: >-2
   valkey{{ valkey_instance_suffix }}
 
 valkey_config_path: "/etc/valkey"
+valkey_config_path_owner: "root"
+valkey_config_path_group: "root"
 valkey_config_file: >-2
   {{ valkey_config_path }}/valkey{{ valkey_instance_suffix }}.conf
 valkey_data_path: "/var/lib/valkey{{ valkey_instance_suffix }}"
