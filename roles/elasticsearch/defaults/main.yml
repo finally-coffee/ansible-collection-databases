@@ -1,5 +1,5 @@
 ---
-elasticsearch_version: "8.18.1"
+elasticsearch_version: "9.0.1"
 elasticsearch_state: present
 
 elasticsearch_base_path: /opt/elasticsearch
