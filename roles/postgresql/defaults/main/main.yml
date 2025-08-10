@@ -4,10 +4,12 @@ postgresql_version: >-2
   {{ postgresql_versions[postgresql_major_version | string] }}
 postgresql_major_version: 16
 postgresql_versions:
+  "18": "18beta2"
   "17": "17.5"
   "16": "16.9"
   "15": "15.13"
   "14": "14.18"
+  "13": "13.21"
 
 postgresql_config_path: >-2
   /etc/postgresql/{{ postgresql_major_version }}
