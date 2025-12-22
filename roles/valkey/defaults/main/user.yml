@@ -7,4 +7,4 @@ valkey_user_system: true
 valkey_user_create_home: false
 valkey_user_groups: ~
 valkey_user_append_groups: >-2
-  {{ valkey_user_groups | default(true, false) | bool }}
+  {{ valkey_user_groups | default(true, false) }}
