@@ -41,6 +41,7 @@ valkey_container_command:
 valkey_container_networks: ~
 valkey_container_etc_hosts: ~
 valkey_container_dns_servers: ~
+valkey_container_working_dir: "{{ valkey_data_path }}"
 valkey_container_restart_policy: "unless-stopped"
 valkey_container_state: >-2
   {{ (valkey_state == 'present') | ternary('started', 'absent') }}
