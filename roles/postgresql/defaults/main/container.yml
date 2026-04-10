@@ -15,7 +15,8 @@ postgresql_container_image: >-2
     ] | flatten | join('/'))
     + ':' + postgresql_container_image_tag | default(
       postgresql_version + (
-        ((postgresql_container_image_flavour is string)
+        ((postgresql_container_image_flavour is defined)
+          and (postgresql_container_image_flavour is string)
           and (postgresql_container_image_flavour | length > 0))
         | ternary(
           '-' + postgresql_container_image_flavour | default('', true),
